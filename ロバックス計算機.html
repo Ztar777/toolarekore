@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robux 税引き計算機</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        .container { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+        input, button { margin: 10px; padding: 10px; width: 90%; font-size: 16px; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <h1>Robux 税引き計算機</h1>
+    <div class="container">
+        <h2>① 販売後に受け取れる Robux</h2>
+        <label for="sellInput">販売価格 (Robux)：</label>
+        <input type="number" id="sellInput" placeholder="例: 1000">
+        <button onclick="calculateAfterTax()">計算</button>
+        <p id="afterTaxResult"></p>
+
+        <h2>② 目標 Robux を受け取るには</h2>
+        <label for="desiredInput">受け取りたい Robux：</label>
+        <input type="number" id="desiredInput" placeholder="例: 700">
+        <button onclick="calculateBeforeTax()">計算</button>
+        <p id="beforeTaxResult"></p>
+    </div>
+
+    <script>
+        function calculateAfterTax() {
+            const sellInput = document.getElementById("sellInput");
+            const sellRobux = parseInt(sellInput.value.trim());
+
+            if (isNaN(sellRobux) || sellRobux <= 0) {
+                document.getElementById("afterTaxResult").innerText = "有効な Robux 数を入力してください。";
+                return;
+            }
+
+            const taxRate = 0.3; // 30% 手数料
+            const afterTax = Math.floor(sellRobux * (1 - taxRate)); // 小数点以下を切り捨て
+
+            document.getElementById("afterTaxResult").innerText = 
+                `販売価格 ${sellRobux} Robux → 受け取り ${afterTax} Robux`;
+        }
+
+        function calculateBeforeTax() {
+            const desiredInput = document.getElementById("desiredInput");
+            const desiredRobux = parseInt(desiredInput.value.trim());
+
+            if (isNaN(desiredRobux) || desiredRobux <= 0) {
+                document.getElementById("beforeTaxResult").innerText = "有効な Robux 数を入力してください。";
+                return;
+            }
+
+            const taxRate = 0.3; // 30% 手数料
+            const beforeTax = Math.ceil(desiredRobux / (1 - taxRate)); // 小数点以下を切り上げ
+
+            document.getElementById("beforeTaxResult").innerText = 
+                `受け取りたい ${desiredRobux} Robux → 必要な販売価格 ${beforeTax} Robux`;
+        }
+    </script>
+
+</body>
+</html>

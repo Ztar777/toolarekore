@@ -1,0 +1,195 @@
+<div style="text-align: left;"><!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox ユーザーネームジェネレーター</title>
+    <style>
+        /* 全体のスタイル */
+        .roblox-gen-container {
+            font-family: Arial, sans-serif;
+            width: 100%;
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        /* ボタン共通スタイル */
+        .roblox-gen-btn, .roblox-copy-btn {
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 10px 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .roblox-gen-btn { background: #007bff; color: white; }
+        .roblox-gen-btn:hover { background: #0056b3; }
+
+        .roblox-copy-btn { background: #28a745; color: white; }
+        .roblox-copy-btn:hover { background: #218838; }
+
+        /* ユーザーネームの表示エリア */
+        .roblox-username {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 350px;
+            word-break: break-word;
+            display: inline-block;
+        }
+
+        /* ローディングアニメーション */
+        .roblox-loading {
+            display: none;
+            margin: 10px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin 0.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* チェックボックスのスタイル */
+        .roblox-option {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* トースト通知のスタイル */
+        .roblox-toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            padding: 10px;
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .roblox-toast.show {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="roblox-gen-container">
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;"> Roblox ユーザーネームジェネレーター </div>
+
+        <label class="roblox-option">
+            <input type="checkbox" id="underscoreOption"> 名詞の後に「_」を追加
+        </label>
+
+        <button class="roblox-gen-btn" onclick="generateUsername()">生成する</button>
+        <div class="roblox-loading"></div>
+        <div class="roblox-username" id="usernameDisplay">---</div>
+        <button class="roblox-copy-btn" onclick="copyUsername()">コピー</button>
+    </div>
+
+    <div id="robloxToast" class="roblox-toast">コピーしました!</div>
+
+    <script>
+        const adjectives = [
+        "Fast", "Epic", "Cool", "Dark", "Brave", "Clever", "Lucky", "Happy", "Mighty", "Rapid",
+        "Fierce", "Silent", "Swift", "Golden", "Shadow", "Fearless", "Daring", "Thunder", "Stormy", "Wild",
+        "Agile", "Angry", "Ancient", "Bitter", "Bright", "Calm", "Chilly", "Crimson", "Dashing", "Dynamic",
+        "Eager", "Electric", "Enchanted", "Famous", "Fiery", "Frosty", "Glowing", "Grim", "Heroic", "Icy",
+        "Iron", "Jolly", "Kind", "Loyal", "Lunar", "Magic", "Mystic", "Noble", "Oceanic", "Peaceful",
+        "Playful", "Proud", "Quick", "Radiant", "Raging", "Ravenous", "Royal", "Scorching", "Sharp", "Shining",
+        "Shocking", "Silent", "Silver", "Sparkling", "Speedy", "Spooky", "Stealthy", "Steel", "Stormy", "Stubborn",
+        "Sunny", "Tactical", "Thundering", "Tough", "Valiant", "Vast", "Vibrant", "Vicious", "Victorious", "Vivid",
+        "Wicked", "Witty", "Zealous", "Zesty", "Amazing", "Astounding", "Awesome", "Bold", "Brilliant", "Charming",
+        "Dazzling", "Determined", "Elegant", "Fearsome", "Fantastic", "Fascinating", "Flashy", "Gleaming", "Glorious", "Grand",
+        "Incredible", "Intrepid", "Joyful", "Jubilant", "Legendary", "Majestic", "Marvelous", "Miraculous", "Outrageous", "Outstanding",
+        "Phenomenal", "Powerful", "Radiant", "Remarkable", "Spectacular", "Splendid", "Stellar", "Stunning", "Supreme", "Terrific",
+        "Triumphant", "Unstoppable", "Unyielding", "Valorous", "Venerable", "Vivid", "Whimsical", "Wondrous", "Zany", "Zeppelin"
+    ];
+
+    const nouns = [
+        "Dragon", "Ninja", "Knight", "Rider", "Tiger", "Pirate", "Wizard", "Gamer", "Hero", "Hunter",
+        "Phoenix", "Warrior", "Wolf", "Shadow", "Samurai", "Guardian", "Champion", "Assassin", "Demon", "Viking",
+        "Archer", "Barbarian", "Beast", "Berserker", "Blade", "Blizzard", "Bolt", "Bomber", "Brawler", "Brigadier",
+        "Cavalier", "Cleric", "Commander", "Conqueror", "Crusader", "Defender", "Destroyer", "Dominator", "Druid", "Emperor",
+        "Enforcer", "Executioner", "Explorer", "Falcon", "Fencer", "Fighter", "Firebrand", "Forester", "Frostfang", "Gladiator",
+        "Guardian", "Gunner", "Harbinger", "Hawk", "Healer", "Hunter", "Invader", "Juggernaut", "King", "Knightmare",
+        "Lancer", "Lionheart", "Mage", "Marauder", "Marksman", "Marshal", "Mercenary", "Monk", "Nomad", "Outlaw",
+        "Paladin", "Pathfinder", "Pioneer", "Protector", "Raider", "Ranger", "Reaper", "Rebel", "Ronin", "Ruler",
+        "Sage", "Samurai", "Savior", "Scout", "Sentinel", "Shaman", "Sharpshooter", "Sorcerer", "Spartan", "Spellbinder",
+        "Squire", "Strategist", "Striker", "Summoner", "Survivor", "Swashbuckler", "Templar", "Titan", "Traveler", "Tyrant",
+        "Vanquisher", "Vanguard", "Viper", "Visionary", "Voyager", "Wanderer", "Warden", "Warlock", "Whirlwind", "Wizard",
+        "Wolverine", "Wraith", "Zealot", "Zodiac", "Phoenix", "Cyclone", "Blaze", "Inferno", "Tempest", "Avalanche",
+        "Frostbite", "Thunderstorm", "Firestorm", "Iceberg", "Earthquake", "Volcano", "Hurricane", "Tornado", "Typhoon", "Wildfire"
+    ];
+
+        function generateUsername() {
+            const loading = document.querySelector(".roblox-loading");
+            const display = document.getElementById("usernameDisplay");
+            const underscoreOption = document.getElementById("underscoreOption").checked;
+
+            loading.style.display = "block";
+            display.textContent = "---";
+
+            setTimeout(() => {
+                let username = "";
+                do {
+                    let adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                    let noun = nouns[Math.floor(Math.random() * nouns.length)];
+                    let number = Math.floor(Math.random() * 999) + 1;
+                    let separator = underscoreOption ? "_" : "";
+                    username = `${adj}${noun}${separator}${number}`;
+                } while (username.length > 20);
+
+                display.textContent = username;
+                loading.style.display = "none";
+            }, 500);
+        }
+
+        function copyUsername() {
+            const text = document.getElementById("usernameDisplay").textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("コピーしました!");
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("robloxToast");
+            toast.textContent = message;
+            toast.classList.add("show");
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2000);
+        }
+    </script>
+
+</body>
+</html>
+</div>

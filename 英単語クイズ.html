@@ -1,0 +1,222 @@
+<div class="ds-eng-quiz-container">
+  <div class="ds-eng-quiz-header">英単語クイズ（動物＆果物）</div>
+  <div class="ds-eng-quiz-category">
+    <button class="ds-eng-quiz-category-btn active" data-category="animals">動物</button>
+    <button class="ds-eng-quiz-category-btn" data-category="fruits">果物</button>
+  </div>
+  <div class="ds-eng-quiz-question-area">
+    <div class="ds-eng-quiz-question"></div>
+  </div>
+  <div class="ds-eng-quiz-answer-area">
+    <input type="text" class="ds-eng-quiz-input" placeholder="日本語で答えて...">
+    <button class="ds-eng-quiz-submit-btn">回答</button>
+  </div>
+  <div class="ds-eng-quiz-result"></div>
+  <button class="ds-eng-quiz-next-btn">次の問題</button>
+</div>
+
+<style>
+.ds-eng-quiz-container {
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.ds-eng-quiz-header {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.ds-eng-quiz-category {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.ds-eng-quiz-category-btn {
+  padding: 8px 15px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #ddd;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.ds-eng-quiz-category-btn.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.ds-eng-quiz-question-area {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.ds-eng-quiz-question {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  min-height: 40px;
+}
+
+.ds-eng-quiz-answer-area {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.ds-eng-quiz-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px 0 0 5px;
+  font-size: 16px;
+}
+
+.ds-eng-quiz-submit-btn {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+}
+
+.ds-eng-quiz-result {
+  text-align: center;
+  min-height: 20px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.ds-eng-quiz-next-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.ds-eng-quiz-next-btn:hover {
+  background-color: #0b7dda;
+}
+</style>
+
+<script>
+(function() {
+  // クイズデータ（英単語と日本語訳）
+  const quizData = {
+    animals: [
+      { word: "lion", answer: "ライオン" },
+      { word: "elephant", answer: "ゾウ" },
+      { word: "giraffe", answer: "キリン" },
+      { word: "panda", answer: "パンダ" },
+      { word: "kangaroo", answer: "カンガルー" },
+      { word: "tiger", answer: "トラ" },
+      { word: "monkey", answer: "サル" },
+      { word: "zebra", answer: "シマウマ" }
+    ],
+    fruits: [
+      { word: "apple", answer: "りんご" },
+      { word: "banana", answer: "バナナ" },
+      { word: "orange", answer: "オレンジ" },
+      { word: "grape", answer: "ブドウ" },
+      { word: "strawberry", answer: "イチゴ" },
+      { word: "watermelon", answer: "スイカ" },
+      { word: "pineapple", answer: "パイナップル" },
+      { word: "peach", answer: "モモ" }
+    ]
+  };
+
+  // DOM要素
+  const categoryBtns = document.querySelectorAll('.ds-eng-quiz-category-btn');
+  const questionEl = document.querySelector('.ds-eng-quiz-question');
+  const inputEl = document.querySelector('.ds-eng-quiz-input');
+  const submitBtn = document.querySelector('.ds-eng-quiz-submit-btn');
+  const resultEl = document.querySelector('.ds-eng-quiz-result');
+  const nextBtn = document.querySelector('.ds-eng-quiz-next-btn');
+
+  // 変数
+  let currentCategory = 'animals';
+  let currentQuiz = null;
+
+  // 初期化
+  function init() {
+    setCategory('animals');
+    setupEventListeners();
+  }
+
+  // イベントリスナー設定
+  function setupEventListeners() {
+    // カテゴリボタン
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        categoryBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        setCategory(btn.dataset.category);
+        nextQuiz();
+      });
+    });
+
+    // 回答ボタン
+    submitBtn.addEventListener('click', checkAnswer);
+    
+    // 入力欄でEnterキー
+    inputEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkAnswer();
+    });
+
+    // 次の問題ボタン
+    nextBtn.addEventListener('click', nextQuiz);
+  }
+
+  // カテゴリ設定
+  function setCategory(category) {
+    currentCategory = category;
+    nextQuiz();
+  }
+
+  // 次の問題を表示
+  function nextQuiz() {
+    const quizzes = quizData[currentCategory];
+    currentQuiz = quizzes[Math.floor(Math.random() * quizzes.length)];
+    
+    questionEl.textContent = currentQuiz.word;
+    inputEl.value = '';
+    resultEl.textContent = '';
+    inputEl.focus();
+  }
+
+  // 答えをチェック
+  function checkAnswer() {
+    const userAnswer = inputEl.value.trim();
+    
+    if (!userAnswer) {
+      resultEl.textContent = '答えを入力してください';
+      resultEl.style.color = 'red';
+      return;
+    }
+
+    if (userAnswer === currentQuiz.answer) {
+      resultEl.textContent = '正解！';
+      resultEl.style.color = 'green';
+    } else {
+      resultEl.textContent = `不正解！正解は「${currentQuiz.answer}」です`;
+      resultEl.style.color = 'red';
+    }
+  }
+
+  // 初期化実行
+  init();
+})();
+</script>

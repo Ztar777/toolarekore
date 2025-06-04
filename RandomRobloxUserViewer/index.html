@@ -1,38 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Random Roblox User Viewer</title>
-  <link rel="manifest" href="manifest.json" />
+  <title>Roblox 人気ゲームランキング</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    button { padding: 10px 20px; font-size: 16px; }
-    .user { margin-top: 20px; font-size: 20px; }
+    body { font-family: sans-serif; margin: 20px; }
+    .game { margin: 10px 0; padding: 10px; border-bottom: 1px solid #ddd; }
+    .game h2 { margin: 0 0 5px; font-size: 18px; }
+    .game span { color: #666; }
   </style>
 </head>
 <body>
-  <h1>Random Active Roblox User</h1>
-  <button onclick="showRandomUser()">Show Random User</button>
-  <div class="user" id="userDisplay">Click the button to show a user</div>
+  <h1>🔥 Roblox 人気ゲームランキング</h1>
+  <div id="gameList">読み込み中...</div>
 
   <script>
-    // ダミーデータ（本来はAPIから取得）
-    const dummyUsers = [
-      { username: "Player123", id: 1 },
-      { username: "CoolGamerX", id: 2 },
-      { username: "RobloxFan99", id: 3 }
+    const universeIds = [
+      111958650, // Brookhaven 🏡RP
+      292439477, // Arsenal
+      142823291, // Murder Mystery 2
+      2788229376, // Blox Fruits
+      155615604, // Prison Life
+      2534724415, // Adopt Me!
     ];
 
-    function showRandomUser() {
-      const user = dummyUsers[Math.floor(Math.random() * dummyUsers.length)];
-      document.getElementById("userDisplay").innerText = `@${user.username}`;
+    async function fetchGames() {
+      const url = `https://games.roblox.com/v1/games?universeIds=${universeIds.join(",")}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // Sort by playing count (descending)
+      const sorted = data.data.sort((a, b) => b.playing - a.playing);
+
+      const container = document.getElementById("gameList");
+      container.innerHTML = ""; // clear
+
+      sorted.forEach(game => {
+        const el = document.createElement("div");
+        el.className = "game";
+        el.innerHTML = `
+          <h2>${game.name}</h2>
+          <span>👥 現在のプレイヤー数: ${game.playing.toLocaleString()}</span>
+        `;
+        container.appendChild(el);
+      });
     }
 
-    // PWAインストール対応
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
+    // 初回と定期更新
+    fetchGames();
+    setInterval(fetchGames, 30000); // 30秒ごと更新
   </script>
 </body>
 </html>

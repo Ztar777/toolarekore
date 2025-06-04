@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Robloxユーザー検索ツール</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 2rem; }
+    input { padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; margin-left: 0.5rem; }
+    .profile { margin-top: 2rem; }
+    .avatar { border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Robloxユーザー検索</h1>
+  <input type="text" id="usernameInput" placeholder="ユーザー名を入力" />
+  <button onclick="searchUser()">検索</button>
+
+  <div id="result" class="profile"></div>
+
+  <script>
+    async function searchUser() {
+      const name = document.getElementById("usernameInput").value.trim();
+      if (!name) return alert("ユーザー名を入力してください");
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "検索中...";
+
+      try {
+        // 名前からユーザーID取得
+        const res1 = await fetch("https://users.roblox.com/v1/usernames/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usernames: [name] })
+        });
+        const data1 = await res1.json();
+        if (!data1.data.length) throw new Error("ユーザーが見つかりません");
+
+        const userId = data1.data[0].id;
+
+        // プロフィール取得
+        const res2 = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+        const profile = await res2.json();
+
+        // アバター取得
+        const avatarRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
+        const avatarData = await avatarRes.json();
+        const avatarUrl = avatarData.data[0]?.imageUrl;
+
+        resultDiv.innerHTML = `
+          <img src="${avatarUrl}" alt="avatar" class="avatar" width="150" height="150" /><br />
+          <h2>${profile.displayName}</h2>
+          <p>@${profile.name}</p>
+          <p>${profile.description || "（説明なし）"}</p>
+          <p>作成日: ${new Date(profile.created).toLocaleDateString()}</p>
+        `;
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color: red;">エラー: ${err.message}</p>`;
+      }
+    }
+
+    // Service Worker 登録
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>

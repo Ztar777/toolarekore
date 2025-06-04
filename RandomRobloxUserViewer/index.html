@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Roblox User Viewer</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    .user { margin-top: 20px; font-size: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Random Active Roblox User</h1>
+  <button onclick="showRandomUser()">Show Random User</button>
+  <div class="user" id="userDisplay">Click the button to show a user</div>
+
+  <script>
+    // ダミーデータ（本来はAPIから取得）
+    const dummyUsers = [
+      { username: "Player123", id: 1 },
+      { username: "CoolGamerX", id: 2 },
+      { username: "RobloxFan99", id: 3 }
+    ];
+
+    function showRandomUser() {
+      const user = dummyUsers[Math.floor(Math.random() * dummyUsers.length)];
+      document.getElementById("userDisplay").innerText = `@${user.username}`;
+    }
+
+    // PWAインストール対応
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
